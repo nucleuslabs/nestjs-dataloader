@@ -19,6 +19,11 @@ import { idText } from 'typescript';
 export interface NestDataLoader<ID, Type> {
   /**
    * Should return a new instance of dataloader each time
+   * @params ctx: the graphql execution context
+   */
+  generateDataLoader(ctx: any): DataLoader<ID, Type>;
+  /**
+   * Should return a new instance of dataloader each time
    */
   generateDataLoader(): DataLoader<ID, Type>;
 }
@@ -51,7 +56,7 @@ export class DataLoaderInterceptor implements NestInterceptor {
             try {           
               ctx[type] = (async () => { 
                 return (await this.moduleRef.resolve<NestDataLoader<any, any>>(type, ctx[NEST_LOADER_CONTEXT_KEY].contextId, { strict: false }))
-                  .generateDataLoader();
+                  .generateDataLoader(ctx);
               })();
             } catch (e) {
               throw new InternalServerErrorException(`The loader ${type} is not provided` + e);
